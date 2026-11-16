@@ -1,0 +1,71 @@
+name: Build & Release IPA
+
+on:
+  push:
+    branches: [ main, master ]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    name: Build & Release IPA
+    runs-on: macos-latest
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Install XcodeGen
+        run: brew install xcodegen
+
+      - name: Locate project and generate
+        run: |
+          if [ -d "ExtraHearing" ]; then
+            cd ExtraHearing
+          fi
+          xcodegen generate
+
+      - name: Build Archive (No Signing)
+        run: |
+          if [ -d "ExtraHearing" ]; then
+            cd ExtraHearing
+          fi
+          xcodebuild archive \
+            -project ExtraHearing.xcodeproj \
+            -scheme ExtraHearing \
+            -configuration Release \
+            -destination 'generic/platform=iOS' \
+            -archivePath build/ExtraHearing.xcarchive \
+            CODE_SIGNING_ALLOWED=NO \
+            CODE_SIGNING_REQUIRED=NO \
+            CODE_SIGN_IDENTITY="" \
+            AD_HOC_CODE_SIGNING_ALLOWED=YES
+
+      - name: Package Payload into .ipa
+        run: |
+          if [ -d "ExtraHearing" ]; then
+            cd ExtraHearing
+          fi
+          mkdir -p Payload
+          cp -r build/ExtraHearing.xcarchive/Products/Applications/ExtraHearing.app Payload/
+          zip -r ExtraHearing.ipa Payload
+          mv ExtraHearing.ipa ../ || true
+
+      - name: Create GitHub Release with IPA
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: v1.0.0
+          name: "ExtraHearing v1.0.0"
+          body: "تطبيق Extra Hearing جاهز للتثبيت عبر AltStore"
+          files: |
+            **/ExtraHearing.ipa
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Upload Artifact Backup
+        uses: actions/upload-artifact@v4
+        with:
+          name: ExtraHearing-IPA
+          path: "**/ExtraHearing.ipa"
