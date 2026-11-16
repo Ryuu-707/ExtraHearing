@@ -1,0 +1,28 @@
+name: ExtraHearing
+options:
+  bundleIdPrefix: com.unclefaisal
+  deploymentTarget:
+    iOS: "16.0"
+  xcodeVersion: "15.0"
+
+settings:
+  base:
+    CODE_SIGNING_ALLOWED: "NO"
+    CODE_SIGNING_REQUIRED: "NO"
+    CODE_SIGN_IDENTITY: ""
+    DEVELOPMENT_TEAM: ""
+    PRODUCT_NAME: "ExtraHearing"
+    SWIFT_VERSION: "5.9"
+
+targets:
+  ExtraHearing:
+    type: application
+    platform: iOS
+    deploymentTarget: "16.0"
+    sources:
+      - path: Sources
+    settings:
+      base:
+        INFOPLIST_FILE: Sources/Info.plist
+        PRODUCT_BUNDLE_IDENTIFIER: com.unclefaisal.extrahearing
+        GENERATE_INFOPLIST_FILE: "NO"
